@@ -1,0 +1,346 @@
+{% extends 'mainApp/main.html' %} {% load static %} {% block page_title %}
+{{produ_name}} {% endblock %} {% block css %}
+<link
+  rel="stylesheet"
+  href="{% static 'css/product_detel.css' %}"
+  type="text/css"
+  media="screen"
+/>
+
+<style>
+  .card1 {
+    display: flex;
+    align-items: center; /* Align content to the left */
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 150px; /* Adjust width as needed */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+  }
+
+  .card1.active {
+    border-color: red;
+  }
+
+  .card1.active .price {
+    color: red;
+  }
+
+  .card1.active h2 {
+    color: red;
+  }
+
+  .card-image {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    background-color: #ddd; /* Placeholder color */
+    background-size: cover;
+  }
+  .card1 h2 {
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+  .card1 .price_card {
+    font-size: 12px;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 3px;
+  }
+
+  .list-group {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /* comments */
+  .comment-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+
+  /* Styling for the reviews heading */
+  .comment-section h2 {
+    margin-top: 0;
+    font-size: 24px;
+    color: #333;
+  }
+
+  /* Styling for the reviews list */
+  .review-item {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    list-style: none;
+    transition: all 0.3s;
+  }
+
+  /* Styling for user info */
+  .user-info {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  /* Styling for user name */
+  .user-name {
+    color: #007bff; /* Blue color for username */
+  }
+
+  /* Styling for rating */
+  .rating {
+    margin-bottom: 5px;
+  }
+
+  /* Styling for comment */
+  .comment {
+    color: #555;
+  }
+
+  /* Styling for 'No reviews yet' message */
+  .no-reviews {
+    font-style: italic;
+    color: #777;
+  }
+
+  .comment_deleted_popUp {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .comment_deleted_popUp.show {
+    /* Visible state */
+    opacity: 1;
+  }
+
+  .comment_deleted_popUp.hide {
+    /* Hidden state */
+    opacity: 0;
+  }
+</style>
+
+{% endblock %} {% block content %}
+
+<section class="main-section-productDtl">
+  <div class="container-fluid d-flex gap-3 res-cont mb-4">
+    <div class="photo-border-width" style="width: 60%">
+      <div
+        class="photos border d-flex justify-content-center p-3 slider-container"
+        style="overflow: hidden; max-height: 560px"
+      >
+        <div
+          class="otherimgs d-flex gap-2 thumbnails"
+          style="flex-direction: column; width: 20%"
+        >
+          {% for i in product %}
+          <div class="otherimg-div" style="cursor: pointer">
+            <img
+              src="/images/{{i.img_url}}"
+              alt="{{j.alt_text}}"
+              style="width: 60px"
+              class="thumbnail"
+            />
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="isfeature viewport" style="width: 80%">
+          {% for i in product %} {% if i.is_default %}
+          <div class="defaultimg-div">
+            <img
+              src="/images/{{i.img_url}}"
+              alt="{{j.alt_text}}"
+              style="width: 80%"
+              class="main-image"
+            />
+          </div>
+
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+
+      <div class="desc border p-4 mt-3 desc1">
+        <h4>Description:</h4>
+
+        <p class="description">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis enim
+          reprehenderit obcaecati adipisci nostrum libero harum esse sit sed
+          delectus exercitationem dolores molestiae, alias dolore accusamus.
+          Laudantium corporis rerum quo.
+        </p>
+      </div>
+    </div>
+
+    <div class="product-detail border p-3" style="width: 40%">
+      <h1 class="name">{{produ_name}}</h1>
+
+      <p class="code">code: <span class="code32">2314761823</span></p>
+
+      <div class="rating-stars"></div>
+
+      <div
+        class="filters d-flex gap-2"
+        style="flex-wrap: wrap; flex-direction: column"
+      >
+        <div class="list-group">
+          {% for i in product %}
+
+          <!-- -->
+          {% if i.is_default %}
+
+          <div class="card1 active" data-sku="{{i.sku}}">
+            <img
+              class="card-image"
+              src="/static{{i.img_url.url}}"
+              alt="Replace with your image"
+            />
+            <div>
+              <h2>1 option from</h2>
+              <p class="price_card" data-price="{{i.retail_price}}">
+                ${{i.retail_price}}
+              </p>
+            </div>
+          </div>
+          {% else %}
+          <!-- -->
+
+          <div class="card1" data-sku="{{i.sku}}">
+            <img
+              class="card-image"
+              src="/static{{i.img_url.url}}"
+              alt="Replace with your image"
+            />
+            <div>
+              <h2>1 option from</h2>
+              <div class="price_card" data-price="{{i.retail_price}}">
+                ${{i.retail_price}}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          <!-- -->
+          {% endfor %}
+        </div>
+
+        <div
+          class="list-group list-group-flush attrs_and_values"
+          style="display: block"
+        ></div>
+      </div>
+
+      <div class="priceandquantity mt-5">
+        <h4 class="text-dark">
+          Price:
+          <span class="price" style="color: #1d3b81 !important">$34.95</span>
+        </h4>
+
+        <h4 class="">
+          Is Left:
+          <span class="unit" style="color: #1d3b81 !important">100</span>
+        </h4>
+
+        <h4 class="mt-5">Quantity:</h4>
+        <div class="quantity">
+          <button class="minus"><i class="fa-solid fa-minus"></i></button>
+          <input
+            type="number"
+            value="1"
+            min="1"
+            max=""
+            step="1"
+            name="quantity"
+            class="input-quan"
+          />
+          <button class="plus"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <button
+          class="option mt-5 add-to-cart btn btn-success"
+          style="outline: none; border: none; padding-inline: 3rem"
+        >
+          Add To Cart
+        </button>
+      </div>
+
+      <div class="desc border p-4 mt-3 desc2" style="display: none">
+        <h4>Description:</h4>
+
+        <p class="description">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis enim
+          reprehenderit obcaecati adipisci nostrum libero harum esse sit sed
+          delectus exercitationem dolores molestiae, alias dolore accusamus.
+          Laudantium corporis rerum quo.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {% if request.user.is_authenticated %}
+  <h2>Add a Review:</h2>
+  <div id="rating-stars">
+    <i class="far fa-star star" data-value="1"></i>
+    <i class="far fa-star star" data-value="2"></i>
+    <i class="far fa-star star" data-value="3"></i>
+    <i class="far fa-star star" data-value="4"></i>
+    <i class="far fa-star star" data-value="5"></i>
+  </div>
+  <form id="review-form" class="mb-4">
+    <input type="hidden" id="rating" name="rating" />
+    <textarea
+      id="comment"
+      name="comment"
+      placeholder="Write your comment"
+    ></textarea>
+    <button type="button" class="rating_review_btn">Submit</button>
+  </form>
+  {% else %}
+  <h4>Please log in to leave a review.</h4>
+  {% endif %}
+
+  <div class="comment-section">
+    <h2>Reviews:</h2>
+    <ul id="reviews-list" class="mb-4">
+      {% for review in reviews %}
+      <li class="review-item">
+        <p class="user-info">
+          User: <span class="user-name">{{ review.user.username }}</span>
+        </p>
+        <p class="rating">Rating: {{ review.rating }}</p>
+        <p class="comment">Comment: {{ review.comment }}</p>
+
+        {% if request.user == review.user %}
+        <button
+          class="delete_comment btn btn-danger"
+          data-commPk="{{review.pk}}"
+        >
+          Delete
+        </button>
+        {% endif %}
+      </li>
+      {% empty %}
+      <li>No reviews yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<div class="alert alert-danger comment_deleted_popUp hide" role="alert">
+  Review deleted successfully!!
+</div>
+
+{{rec_data1|json_script:'attributes_values'}}
+{{average_rating|json_script:'avg_rating'}} {{sku|json_script:'sku_for_prod'}}
+<!--  -->
+{% block scripts %}
+<script src="{% static 'js/product_detail1.js' %}"></script>
+{% endblock scripts %} {% endblock %}

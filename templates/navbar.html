@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      .main-navbar {
+        border-bottom: 1px solid #ccc;
+      }
+      .main-navbar .top-navbar {
+        background-color: #2874f0;
+        padding-top: 15px;
+        padding-bottom: 15px;
+      }
+      .main-navbar .top-navbar .brand-name {
+        color: #fff;
+      }
+      .main-navbar .top-navbar .nav-link {
+        color: #fff;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .main-navbar .top-navbar .dropdown-menu {
+        padding: 0px 0px;
+        border-radius: 0px;
+      }
+      .main-navbar .top-navbar .dropdown-menu .dropdown-item {
+        padding: 8px 16px;
+        border-bottom: 1px solid #ccc;
+        font-size: 14px;
+      }
+      .main-navbar .top-navbar .dropdown-menu .dropdown-item i {
+        width: 20px;
+        text-align: center;
+        color: #2874f0;
+        font-size: 14px;
+      }
+      .main-navbar .navbar {
+        padding: 0px;
+        background-color: #ddd;
+      }
+      .main-navbar .navbar .nav-item .nav-link {
+        padding: 8px 20px;
+        color: #000;
+        font-size: 15px;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .main-navbar .top-navbar .nav-link {
+          font-size: 12px;
+          padding: 8px 10px;
+        }
+      }
+
+      #search_results {
+        position: absolute;
+        top: 90px;
+        overflow-y: scroll !important;
+        z-index: 100;
+        max-height: 350px;
+        background-color: white;
+        box-shadow: 20px 20px 60px #929292, -20px -20px 60px #ffffff;
+        width: 100%;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      .result_a_tag {
+        transition: all 0.3s;
+        padding: 0.3rem;
+        gap: 1rem;
+      }
+
+      .spinner-border {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        right: 0;
+      }
+
+      .result_a_tag:hover {
+        background-color: #2362c79d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-navbar shadow-sm sticky-top">
+      <div class="top-navbar">
+        <div class="container-fluid">
+          <div class="row">
+            <div
+              class="col-md-2 my-auto d-none d-sm-none d-md-block d-lg-block"
+            >
+              <a href="/" style="font-size: 1.3rem" class="brand-name"
+                >E-commerce</a
+              >
+            </div>
+            <div class="col-md-5 my-auto" style="position: relative">
+              <form role="search" class="search-res-form" method="get">
+                <div class="input-group">
+                  <input
+                    type="search"
+                    name="search"
+                    id="search-input"
+                    placeholder="Search your product"
+                    class="form-control"
+                  />
+                  <button class="btn bg-white type-button" type="submit">
+                    <i class="fa fa-search"></i>
+                  </button>
+                </div>
+              </form>
+
+              <div class="result" id="search_results">
+                <div
+                  class="product_detail"
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    height: 250px;
+                    gap: 1rem;
+                    padding: 0.5rem;
+                  "
+                ></div>
+
+                <div class="spinner-border" role="status" id="spinner">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-5 my-auto">
+              <ul class="nav justify-content-end align-items-center">
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                  <button
+                    class="nav-link"
+                    id="wishproducts"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wishproductss"
+                  >
+                    <i class="fa fa-heart"></i> Wishlist (<span
+                      class="wish_count"
+                      >{{len_wish}}</span
+                    >)
+                  </button>
+                </li>
+                {% endif %}
+
+                <li class="nav-item">
+                  {% if page == 'cart' %}
+                  <button class="nav-link">
+                    {% if request.user.is_authenticated %}
+                    <i class="fa fa-shopping-cart"></i> Cart (
+                    <!-- -->
+                    {% if cart_data != 'None' %}
+                    <span class="produ_count_cart">{{len_cart}}</span>
+                    {% else %}
+                    <span class="produ_count_cart">0</span>
+                    {% endif %} )
+                    <!-- -->
+                    {% else %}
+                    <i class="fa fa-shopping-cart"></i> Cart (
+                    <!-- -->
+                    <span class="produ_count_cart">0</span> )
+                    <!-- -->
+                    {% endif %}
+                  </button>
+                  {% else %}
+                  <button
+                    class="nav-link"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasRight"
+                    aria-controls="offcanvasRight"
+                  >
+                    {% if request.user.is_authenticated %}
+                    <i class="fa fa-shopping-cart"></i> Cart (
+                    <!-- -->
+                    {% if cart_data != 'None' %}
+                    <span class="produ_count_cart">{{len_cart}}</span>
+                    {% else %}
+                    <span class="produ_count_cart">0</span>
+                    {% endif %} )
+                    <!-- -->
+                    {% else %}
+                    <i class="fa fa-shopping-cart"></i> Cart (
+                    <!-- -->
+                    <span class="produ_count_cart">0</span> )
+                    <!-- -->
+                    {% endif %}
+                  </button>
+                  {% endif %}
+                </li>
+
+                <div>
+                  {% if request.user.is_authenticated %}
+                  <div>
+                    {% if request.user.is_vendor %}
+                    <li class="nav-item dropdown">
+                      <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="navbarDropdown"
+                        role="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        <i class="fa fa-user"></i> {{vendor.shop_name}}
+                      </a>
+                      <ul
+                        class="dropdown-menu"
+                        aria-labelledby="navbarDropdown"
+                      >
+                        <li>
+                          <a
+                            class="dropdown-item"
+                            href="{% url 'add_products' %}"
+                            ><i class="fa fa-plus"></i> Add Products</a
+                          >
+                        </li>
+                        <li>
+                          <a
+                            class="dropdown-item"
+                            href="{% url 'dashboard' vendor.email %}"
+                            ><i class="fa fa-user"></i> Dashboard</a
+                          >
+                        </li>
+                        <li>
+                          <a
+                            class="dropdown-item"
+                            href="{% url 'all_chat_view' %}"
+                            ><i class="fa-solid fa-message"></i> Chat</a
+                          >
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="{% url 'logout' %}"
+                            ><i class="fa fa-sign-out"></i> Logout</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item dropdown">
+                      <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="navbarDropdown"
+                        role="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        <i class="fa fa-user"></i> {{request.user}}
+                      </a>
+                      <ul
+                        class="dropdown-menu"
+                        aria-labelledby="navbarDropdown"
+                      >
+                        <li>
+                          <a
+                            class="dropdown-item"
+                            href="{% url 'dashboard_consumer' %}"
+                            ><i class="fa fa-user"></i> Profile</a
+                          >
+                        </li>
+                        <li>
+                          <a
+                            class="dropdown-item"
+                            href="{% url 'all_chat_view' %}"
+                            ><i class="fa-solid fa-message"></i> Chat</a
+                          >
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="{% url 'logout' %}"
+                            ><i class="fa fa-sign-out"></i> Logout</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    {% endif %}
+                  </div>
+                  {% else %}
+                  <a class="text-light" href="{% url 'login' %}"
+                    ><i class="fa fa-sign-in"></i> Login</a
+                  >
+                  {% endif %}
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if request.user.is_authenticated %}
+    <div
+      class="modal fade"
+      id="wishproductss"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">WishList</h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body wish_mod_body">
+            {% if wishprods %}
+            <!---->
+            {% for wish in wishprods %}
+            <div class="d-flex-sm mb-2">
+              <a
+                href="{% url 'product_detail' wish.product.product.unique_id %}"
+                class="result_a_tag"
+                style="display: flex; align-items: center"
+                ><img
+                  src="/static/images/{{wish.product.img_url}}"
+                  alt=""
+                  style="max-width: 70px"
+                />
+                <span
+                  class="result-span"
+                  style="display: flex; flex-direction: column"
+                >
+                  <span style="color: black">
+                    {{wish.product.product.name}}
+                  </span>
+                  <span class="price" style="color: black">
+                    $ {{wish.product.retail_price}}
+                  </span>
+                </span>
+              </a>
+
+              <div
+                class="p-2 wish_delete"
+                style="background-color: red; cursor: pointer"
+                data-count="{{wish.product.pk}}"
+              >
+                <i class="bi bi-trash text-light"></i>
+              </div>
+            </div>
+            {% endfor %} {% else %}
+
+            <p class="no-products_inwish">
+              You Don't Have Any Wished Products Yet.
+            </p>
+            <!---->
+            {% endif %}
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <!-- -->
+    {% if request.user.is_authenticated %}
+    <div class="for_offcanvas">
+      <div
+        class="offcanvas offcanvas-end canva_cart"
+        tabindex="-1"
+        id="offcanvasRight"
+        aria-labelledby="offcanvasRightLabel"
+      >
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasRightLabel">Your Cart</h5>
+          <button
+            type="button"
+            class="btn-close magariButton"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body off_body_forProd">
+          {% if cart_data != 'None' %}
+          <!-- -->
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <p>Sum: <span class="cart_sum">{{total_price}}</span>$</p>
+
+            <a href="{% url 'cart' %}" class="btn btn-warning">See Cart</a>
+          </div>
+          {% for prod in cart_data %}
+
+          <div class="add_new_product_div">
+            <div style="margin-bottom: 1rem">
+              <a
+                href="{% url 'product_detail' prod.product.product.unique_id %}"
+                class="result_a_tag"
+                style="display: flex; align-items: center"
+                ><img
+                  src="/static{{prod.product.img_url.url}}"
+                  alt=""
+                  style="max-width: 70px"
+                />
+                <span
+                  class="result-span"
+                  style="display: flex; flex-direction: column"
+                >
+                  <span style="color: black">
+                    {{prod.product.product.name}}
+                  </span>
+                  <span class="price_prod" style="color: black">
+                    {{prod.product.retail_price}}$
+                  </span>
+                  <span class="quantity" style="color: black"
+                    >Quantity: {{prod.quantity}}
+                  </span>
+                </span>
+              </a>
+
+              <div
+                class="p-2 prod_cart_delete"
+                style="
+                  background-color: red;
+                  cursor: pointer;
+                  text-align: center;
+                "
+                data-count="{{prod.product.sku}}"
+              >
+                <i class="bi bi-trash text-light"></i>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+          <!-- -->
+          {% else %}
+          <span class="cart_empt"> Your Cart Is Empty </span>
+
+          <p>Sum: <span class="cart_sum">0</span></p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div
+      class="offcanvas offcanvas-end canva_cart"
+      tabindex="-1"
+      id="offcanvasRight"
+      aria-labelledby="offcanvasRightLabel"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Your Cart</h5>
+        <button
+          type="button"
+          class="btn-close magariButton"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="offcanvas-body off_body_forProd">
+        <span class="cart_empt"> Your Cart Is Empty </span>
+
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <p>Sum: <span class="cart_sum">{{total_price}}</span>$</p>
+
+          <a href="{% url 'cart' %}" class="btn btn-warning">See Cart</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <script src="{% static 'js/search1.js' %}"></script>
+  </body>
+</html>
